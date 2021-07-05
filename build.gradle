@@ -1,0 +1,63 @@
+
+plugins {
+    id 'application'
+    id "com.github.johnrengelman.shadow" version "6.0.0" // Uber-JAR builder
+}
+
+version = '0.0.0'
+mainClassName = 'spike.lwjglbuildingrenderer.Spike'
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+project.ext.lwjglVersion = "3.2.3"
+project.ext.lwjglNatives = "natives-windows"
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url = "https://s3-us-west-2.amazonaws.com/dynamodb-local/release"
+    }
+}
+
+dependencies {
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+
+    implementation "org.lwjgl:lwjgl"
+    implementation "org.lwjgl:lwjgl-assimp"
+    implementation "org.lwjgl:lwjgl-glfw"
+    implementation "org.lwjgl:lwjgl-opengl"
+    implementation "org.lwjgl:lwjgl-shaderc"
+    runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-shaderc::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
+
+//    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+//    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+//    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.0'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+compileJava {
+    dependsOn 'copyGameResources'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task copyGameResources(type: Copy) {
+    from("${project.projectDir}/data") {
+        include '**/*.*'
+    }
+    into 'build/libs/data'
+}

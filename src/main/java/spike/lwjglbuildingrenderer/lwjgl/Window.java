@@ -2,15 +2,12 @@ package spike.lwjglbuildingrenderer.lwjgl;
 
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
-import static org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor;
-import static org.lwjgl.glfw.GLFW.glfwGetVideoMode;
 import static org.lwjgl.glfw.GLFW.glfwGetWindowSize;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -96,7 +93,8 @@ public class Window {
 	}
 
 	/**
-	 * Makes the window visible if it was previously hidden. If the window is already visible or is in full screen mode,
+	 * Makes the window visible if it was previously hidden. If the window is already visible or is in full screen
+	 * mode,
 	 * this function does nothing.
 	 *
 	 * <p>This function must only be called from the main thread.</p>
@@ -116,16 +114,22 @@ public class Window {
 	}
 
 	/**
-	 * Brings the specified window to front and sets input focus. The window should already be visible and not iconified.
+	 * Brings the specified window to front and sets input focus. The window should already be visible and not
+	 * iconified.
 	 *
-	 * <p>By default, both windowed and full screen mode windows are focused when initially created. Set the {@link GLFW#GLFW_FOCUSED FOCUSED} hint to disable this behavior.</p>
+	 * <p>By default, both windowed and full screen mode windows are focused when initially created. Set the {@link
+	 * GLFW#GLFW_FOCUSED FOCUSED} hint to disable this behavior.</p>
 	 *
-	 * <p>Also by default, windowed mode windows are focused when shown with {@link GLFW#glfwShowWindow ShowWindow}. Set the {@link GLFW#GLFW_FOCUS_ON_SHOW FOCUS_ON_SHOW} window hint to disable this behavior.</p>
+	 * <p>Also by default, windowed mode windows are focused when shown with {@link GLFW#glfwShowWindow ShowWindow}.
+	 * Set
+	 * the {@link GLFW#GLFW_FOCUS_ON_SHOW FOCUS_ON_SHOW} window hint to disable this behavior.</p>
 	 *
-	 * <p><b>Do not use this function</b> to steal focus from other applications unless you are certain that is what the user wants. Focus stealing can be extremely disruptive.</p>
+	 * <p><b>Do not use this function</b> to steal focus from other applications unless you are certain that is what
+	 * the
+	 * user wants. Focus stealing can be extremely disruptive.</p>
 	 *
-	 * <p>For a less disruptive way of getting the user's attention, see {@link GLFW#glfwRequestWindowAttention RequestWindowAttention}.</p>
-	 *
+	 * <p>For a less disruptive way of getting the user's attention, see {@link GLFW#glfwRequestWindowAttention
+	 * RequestWindowAttention}.</p>
 	 */
 	public void focus() {
 		GLFW.glfwFocusWindow(this.getHandle());
@@ -138,19 +142,21 @@ public class Window {
 	public void getSize(final BiConsumer<Integer, Integer> withConsumer) {
 		int width;
 		int height;
-		try ( MemoryStack stack = stackPush() ) {
+		try (MemoryStack stack = stackPush()) {
 			IntBuffer pWidth = stack.mallocInt(1); // int*
 			IntBuffer pHeight = stack.mallocInt(1); // int*
 			glfwGetWindowSize(this.getHandle(), pWidth, pHeight);
 			width = pWidth.get(0);
 			height = pHeight.get(0);
 		}
-		Objects.requireNonNull(withConsumer).accept(width, height);
+		Objects.requireNonNull(withConsumer)
+				.accept(width, height);
 	}
 
 	public void centerOnMonitor(final Monitor withMonitor) {
 		this.getSize((width, height) -> {
-			VideoMode videoMode = Objects.requireNonNull(withMonitor).getVideoMode();
+			VideoMode videoMode = Objects.requireNonNull(withMonitor)
+					.getVideoMode();
 
 			// Center the window
 			glfwSetWindowPos(
@@ -176,6 +182,7 @@ public class Window {
 
 	/**
 	 * Defines the number of screen updates to wait before swapping buffers.
+	 *
 	 * @param withInterval
 	 */
 	public void swapInterval(final int withInterval) {

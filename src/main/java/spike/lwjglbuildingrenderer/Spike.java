@@ -3,7 +3,7 @@ package spike.lwjglbuildingrenderer;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL46;
 import spike.lwjglbuildingrenderer.lwjgl.Monitor;
 import spike.lwjglbuildingrenderer.lwjgl.Window;
 
@@ -85,11 +85,11 @@ public class Spike implements Runnable {
 		// creates the GLCapabilities instance and makes the OpenGL
 		// bindings available for use.
 		GL.createCapabilities();
-		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+		GL46.glEnableClientState(GL46.GL_VERTEX_ARRAY);
 
 		// Set the clear color
-		GL11.glClearColor(43f / 255f, 43f / 255f, 43f / 255f, 0f); // BG color
-		GL11.glColor3f(169f / 255f, 183f / 255f, 198f / 255f); // Text color
+		GL46.glClearColor(43f / 255f, 43f / 255f, 43f / 255f, 0f); // BG color
+		GL46.glColor3f(169f / 255f, 183f / 255f, 198f / 255f); // Text color
 
 		// main game loop
 		while (!this.window.shouldClose()) {
@@ -100,8 +100,8 @@ public class Spike implements Runnable {
 			// update scene
 
 			// start new render pass
-			GL11.glLoadIdentity();
-			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+			GL46.glLoadIdentity();
+			GL46.glClear(GL46.GL_COLOR_BUFFER_BIT | GL46.GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
 			// render scene
 
@@ -109,6 +109,6 @@ public class Spike implements Runnable {
 			this.window.swapBuffers();
 		}
 
-		GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
+		GL46.glDisableClientState(GL46.GL_VERTEX_ARRAY);
 	}
 }

@@ -1,11 +1,12 @@
 package spike.lwjglbuildingrenderer;
 
+import com.xenosnowfox.engine.display.Monitor;
+import com.xenosnowfox.engine.display.MonitorFactory;
+import com.xenosnowfox.engine.display.Window;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL46;
-import spike.lwjglbuildingrenderer.lwjgl.Monitor;
-import spike.lwjglbuildingrenderer.lwjgl.Window;
 
 import java.util.Properties;
 
@@ -13,10 +14,6 @@ import java.util.Properties;
  * Main Spike Entrypoint.
  */
 public class Spike implements Runnable {
-
-	private final Properties spikeProperties;
-
-	private final Monitor monitor;
 
 	private final Window window;
 
@@ -33,8 +30,8 @@ public class Spike implements Runnable {
 
 	public Spike() {
 		System.out.println("Loading properties file.");
-		this.spikeProperties = Utils.loadProperties("spike.properties");
-		System.out.println(this.spikeProperties);
+		final Properties spikeProperties = Utils.loadProperties("spike.properties");
+		System.out.println(spikeProperties);
 
 		// Setup an error callback. The default implementation
 		// will print the error message in System.err.
@@ -45,7 +42,7 @@ public class Spike implements Runnable {
 			throw new IllegalStateException("Unable to initialize GLFW");
 
 		// get a reference to the primary monitor
-		monitor = Monitor.primary();
+		final Monitor monitor = MonitorFactory.getPrimaryMonitor();
 
 		// configure GLFW
 		GLFW.glfwDefaultWindowHints(); // optional, the current window hints are already the default
@@ -55,21 +52,15 @@ public class Spike implements Runnable {
 
 		// create a window
 		this.window = new Window(
-				this.spikeProperties.getProperty("window.title", "Spike")
-				, Integer.parseInt(this.spikeProperties.getProperty("window.width", "640"))
-				, Integer.parseInt(this.spikeProperties.getProperty("window.height", "480"))
+				spikeProperties.getProperty("window.title", "Spike")
+				, Integer.parseInt(spikeProperties.getProperty("window.width", "640"))
+				, Integer.parseInt(spikeProperties.getProperty("window.height", "480"))
+				, true
 		);
-
-		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
-		GLFW.glfwSetKeyCallback(this.window.getHandle(), (window, key, scancode, action, mods) -> {
-			if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE)
-				GLFW.glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
-		});
 
 		// center the window on the monitor
 		this.window.centerOnMonitor(monitor);
 		this.window.setAsCurrentRenderingContext();
-		this.window.swapInterval(1);
 		this.window.show();
 		this.window.focus();
 		this.window.requestAttention();

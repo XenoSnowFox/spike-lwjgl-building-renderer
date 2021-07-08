@@ -1,9 +1,9 @@
 package com.xenosnowfox.engine.math.vectors;
 
 /**
- * A vector composed of 2 floating point values (x and y).
+ * A vector composed of 3 floating point values (x, y and z).
  */
-public class Vector2f {
+public class Vector3f {
 
 	/**
 	 * X value.
@@ -16,10 +16,15 @@ public class Vector2f {
 	public float y;
 
 	/**
+	 * Z value.
+	 */
+	public float z;
+
+	/**
 	 * Instantiates a new instance with an initial zero value.
 	 */
-	public Vector2f() {
-		this(0f, 0f);
+	public Vector3f() {
+		this(0f, 0f, 0f);
 	}
 
 	/**
@@ -30,9 +35,10 @@ public class Vector2f {
 	 * @param withY
 	 * 		Y value
 	 */
-	public Vector2f(final float withX, final float withY) {
+	public Vector3f(final float withX, final float withY, final float withZ) {
 		this.x = withX;
 		this.y = withY;
+		this.z = withZ;
 	}
 
 	/**
@@ -40,7 +46,7 @@ public class Vector2f {
 	 */
 	@Override
 	public String toString() {
-		return "Vector2f{x=" + this.x + ", y=" + this.y + "}";
+		return "Vector3f{x=" + this.x + ", y=" + this.y + ", z=" + this.z + "}";
 	}
 
 	/**
@@ -49,8 +55,8 @@ public class Vector2f {
 	 * @param other
 	 * 		instance to copy date from
 	 */
-	public Vector2f(final Vector2f other) {
-		this(other.x, other.y);
+	public Vector3f(final Vector3f other) {
+		this(other.x, other.y, other.z);
 	}
 
 	/**
@@ -72,6 +78,15 @@ public class Vector2f {
 	}
 
 	/**
+	 * Returns the Z portion of the vector.
+	 *
+	 * @return Z value
+	 */
+	public float getZ() {
+		return this.z;
+	}
+
+	/**
 	 * Defines the X portion of the vector.
 	 *
 	 * @param withX
@@ -89,6 +104,16 @@ public class Vector2f {
 	 */
 	public void setY(final float withY) {
 		this.y = withY;
+	}
+
+	/**
+	 * Defines the Z portion of the vector.
+	 *
+	 * @param withZ
+	 * 		new Z value
+	 */
+	public void setZ(final float withZ) {
+		this.z = withZ;
 	}
 
 }

@@ -1,6 +1,6 @@
 package com.xenosnowfox.engine.display;
 
-import com.xenosnowfox.engine.math.vectors.Vector2f;
+import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryStack;

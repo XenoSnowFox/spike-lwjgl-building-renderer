@@ -5,18 +5,29 @@ import com.xenosnowfox.engine.GameLoop;
 import com.xenosnowfox.engine.display.Monitor;
 import com.xenosnowfox.engine.display.MonitorFactory;
 import com.xenosnowfox.engine.display.Window;
+import com.xenosnowfox.engine.graphics.Camera;
 import com.xenosnowfox.engine.graphics.GameItem;
 import com.xenosnowfox.engine.graphics.Material;
 import com.xenosnowfox.engine.graphics.Mesh;
 import com.xenosnowfox.engine.graphics.OBJLoader;
+import com.xenosnowfox.engine.graphics.PointLight;
+import com.xenosnowfox.engine.graphics.ShaderProgram;
 import com.xenosnowfox.engine.graphics.Texture;
+import com.xenosnowfox.engine.graphics.Transformation;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL46;
 
 import java.util.Properties;
+
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glViewport;
 
 /**
  * Main Spike Entrypoint.
@@ -44,6 +55,8 @@ public class Spike implements GameLogic {
 
 	private final Window window;
 
+	private final Camera camera;
+
 	private Texture texture;
 
 	private Material material;
@@ -51,6 +64,10 @@ public class Spike implements GameLogic {
 	private Mesh mesh;
 
 	private GameItem[] gameItems;
+
+	private ShaderProgram shaderProgram;
+
+	private float specularPower = 10f;
 
 	/**
 	 * Field of View in Radians
@@ -60,6 +77,14 @@ public class Spike implements GameLogic {
 	private static final float Z_NEAR = 0.01f;
 
 	private static final float Z_FAR = 1000.f;
+
+	private final Transformation transformation = new Transformation();
+
+	private float cameraOffset = 0f;
+
+	private Vector3f ambientLight;
+
+	private PointLight pointLight;
 
 
 	public Spike() throws Exception {
@@ -103,6 +128,8 @@ public class Spike implements GameLogic {
 		this.window.focus();
 		this.window.requestAttention();
 
+		this.camera = new Camera();
+		this.camera.setPosition(0f, 0f, 0f);
 
 		// This line is critical for LWJGL's interoperation with GLFW's
 		// OpenGL context, or any context that is managed externally.
@@ -111,6 +138,7 @@ public class Spike implements GameLogic {
 		// bindings available for use.
 		GL.createCapabilities();
 		GL46.glEnableClientState(GL46.GL_VERTEX_ARRAY);
+
 	}
 
 	@Override
@@ -135,9 +163,37 @@ public class Spike implements GameLogic {
 		// load mesh into a game object
 		System.out.println("Converting mesh into game item.");
 		GameItem gameItem = new GameItem(mesh);
-		gameItem.setScale(0.5f);
-		gameItem.setPosition(0, 0, 0);
+		gameItem.setScale(1f, 1f, 1f);
+		gameItem.setPosition(1f, 0, 0);
 		gameItems = new GameItem[]{gameItem};
+
+		// load shader program
+		System.out.println("Loading shader program.");
+		shaderProgram = new ShaderProgram();
+		shaderProgram.createVertexShader(Utils.loadResource("/shaders/vertex.vs"));
+		shaderProgram.createFragmentShader(Utils.loadResource("/shaders/fragment.fs"));
+		shaderProgram.link();
+
+		// Create uniforms for modelView and projection matrices and texture
+		shaderProgram.createUniform("projectionMatrix");
+		shaderProgram.createUniform("modelViewMatrix");
+		shaderProgram.createUniform("texture_sampler");
+		// Create uniform for material
+		shaderProgram.createMaterialUniform("material");
+		// Create lighting related uniforms
+		shaderProgram.createUniform("specularPower");
+		shaderProgram.createUniform("ambientLight");
+		shaderProgram.createPointLightUniform("pointLight");
+
+		// ambient light source
+		ambientLight = new Vector3f(1f, 1f, 1f);
+
+		Vector3f lightColour = new Vector3f(1, 1, 1);
+		Vector3f lightPosition = new Vector3f(0, 0, 1);
+		float lightIntensity = 1.0f;
+		pointLight = new PointLight(lightColour, lightPosition, lightIntensity);
+		PointLight.Attenuation att = new PointLight.Attenuation(0.0f, 0.0f, 1.0f);
+		pointLight.setAttenuation(att);
 	}
 
 	@Override
@@ -147,39 +203,68 @@ public class Spike implements GameLogic {
 
 	@Override
 	public void update(final float interval) {
-
+		this.cameraOffset = interval / 10f;
+		// this.camera.setPosition(0f, this.cameraOffset, 0f);
 	}
 
 	@Override
 	public void render() {
+		this.gameItems[0].movePosition(0, 0, -this.cameraOffset);
 
 		// Set the clear color
 		GL46.glClearColor(43f / 255f, 43f / 255f, 43f / 255f, 0f); // BG color
 		GL46.glColor3f(169f / 255f, 183f / 255f, 198f / 255f); // Text color
 		GL46.glEnable(GL46.GL_DEPTH_TEST);
+		// start new render pass
+		GL46.glLoadIdentity();
+		GL46.glClear(GL46.GL_COLOR_BUFFER_BIT | GL46.GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
-
+		// adjust the viewport
+		if (window.isResized()) {
+			GL46.glViewport(0, 0, window.getWidth(), window.getHeight());
+			window.setResized(false);
+		}
 		// Poll for window events. The key callback above will only be invoked during this call.
 		GLFW.glfwPollEvents();
 
 		// update scene
+		shaderProgram.bind();
 
-		// start new render pass
-		GL46.glLoadIdentity();
-		GL46.glClear(GL46.GL_COLOR_BUFFER_BIT | GL46.GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+		// Update projection Matrix
+		Matrix4f projectionMatrix = transformation.getProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
+		shaderProgram.setUniform("projectionMatrix", projectionMatrix);
+
+		// Update view Matrix
+		Matrix4f viewMatrix = transformation.getViewMatrix(this.camera);
+
+		// Update Light Uniforms
+		 shaderProgram.setUniform("ambientLight", ambientLight);
+		 shaderProgram.setUniform("specularPower", specularPower);
+
+		// Get a copy of the light object and transform its position to view coordinates
+		PointLight currPointLight = new PointLight(pointLight);
+		Vector3f lightPos = currPointLight.getPosition();
+		Vector4f aux = new Vector4f(lightPos, 1);
+		aux.mul(viewMatrix);
+		lightPos.x = aux.x;
+		lightPos.y = aux.y;
+		lightPos.z = aux.z;
+		shaderProgram.setUniform("pointLight", currPointLight);
+
+		 shaderProgram.setUniform("texture_sampler", 0);
 
 		// Render each gameItem
 		for (GameItem gameItem : gameItems) {
 			Mesh mesh = gameItem.getMesh();
 			// Set model view matrix for this item
-			//Matrix4f modelViewMatrix = transformation.getModelViewMatrix(gameItem, viewMatrix);
-			//shaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
+			Matrix4f modelViewMatrix = transformation.getModelViewMatrix(gameItem, viewMatrix);
+			shaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
 			// Render the mesh for this game item
-			//shaderProgram.setUniform("material", mesh.getMaterial());
+			shaderProgram.setUniform("material", mesh.getMaterial());
 			mesh.render();
 		}
 
-		// shaderProgram.unbind();
+		 shaderProgram.unbind();
 
 		// swap the buffers
 		this.window.swapBuffers();
@@ -188,6 +273,7 @@ public class Spike implements GameLogic {
 	@Override
 	public void cleanUp() {
 		GL46.glDisableClientState(GL46.GL_VERTEX_ARRAY);
+		this.shaderProgram.cleanup();
 		this.mesh.cleanUp();
 		this.texture.destroy();
 	}

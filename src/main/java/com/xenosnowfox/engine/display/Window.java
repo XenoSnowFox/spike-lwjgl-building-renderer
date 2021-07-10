@@ -133,6 +133,10 @@ public class Window {
 		return this.resized;
 	}
 
+	public void setResized(final boolean isResized) {
+		this.resized = isResized;
+	}
+
 	/**
 	 * Returns whether VSync is on.
 	 *

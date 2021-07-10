@@ -5,8 +5,12 @@ import com.xenosnowfox.engine.GameLoop;
 import com.xenosnowfox.engine.display.Monitor;
 import com.xenosnowfox.engine.display.MonitorFactory;
 import com.xenosnowfox.engine.display.Window;
+import com.xenosnowfox.engine.graphics.GameItem;
 import com.xenosnowfox.engine.graphics.Material;
+import com.xenosnowfox.engine.graphics.Mesh;
+import com.xenosnowfox.engine.graphics.OBJLoader;
 import com.xenosnowfox.engine.graphics.Texture;
+import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -43,6 +47,20 @@ public class Spike implements GameLogic {
 	private Texture texture;
 
 	private Material material;
+
+	private Mesh mesh;
+
+	private GameItem[] gameItems;
+
+	/**
+	 * Field of View in Radians
+	 */
+	private static final float FOV = (float) Math.toRadians(60.0f);
+
+	private static final float Z_NEAR = 0.01f;
+
+	private static final float Z_FAR = 1000.f;
+
 
 	public Spike() throws Exception {
 		System.out.println("Loading properties file.");
@@ -107,6 +125,19 @@ public class Spike implements GameLogic {
 		System.out.println("Creating Material");
 		float reflectance = 1f;
 		this.material = new Material(this.texture, reflectance);
+
+		// load a mesh
+		final String meshFileName = spikeProperties.getProperty("models.directory") + "arch.obj";
+		System.out.println("Loading mesh: " + meshFileName);
+		this.mesh = OBJLoader.loadMeshFile(meshFileName);
+		this.mesh.setMaterial(this.material);
+
+		// load mesh into a game object
+		System.out.println("Converting mesh into game item.");
+		GameItem gameItem = new GameItem(mesh);
+		gameItem.setScale(0.5f);
+		gameItem.setPosition(0, 0, 0);
+		gameItems = new GameItem[]{gameItem};
 	}
 
 	@Override
@@ -137,7 +168,18 @@ public class Spike implements GameLogic {
 		GL46.glLoadIdentity();
 		GL46.glClear(GL46.GL_COLOR_BUFFER_BIT | GL46.GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
-		// render scene
+		// Render each gameItem
+		for (GameItem gameItem : gameItems) {
+			Mesh mesh = gameItem.getMesh();
+			// Set model view matrix for this item
+			//Matrix4f modelViewMatrix = transformation.getModelViewMatrix(gameItem, viewMatrix);
+			//shaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
+			// Render the mesh for this game item
+			//shaderProgram.setUniform("material", mesh.getMaterial());
+			mesh.render();
+		}
+
+		// shaderProgram.unbind();
 
 		// swap the buffers
 		this.window.swapBuffers();
@@ -145,8 +187,8 @@ public class Spike implements GameLogic {
 
 	@Override
 	public void cleanUp() {
-
 		GL46.glDisableClientState(GL46.GL_VERTEX_ARRAY);
+		this.mesh.cleanUp();
 		this.texture.destroy();
 	}
 

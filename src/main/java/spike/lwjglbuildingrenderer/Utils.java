@@ -1,6 +1,8 @@
 package spike.lwjglbuildingrenderer;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -42,6 +44,21 @@ public class Utils {
 	public static List<String> readAllLines(String fileName) throws Exception {
 		List<String> list = new ArrayList<>();
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(Class.forName(Utils.class.getName()).getResourceAsStream(fileName)))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				list.add(line);
+			}
+		}
+		return list;
+	}
+
+	public static List<String> readAllFileLines(String fileName) throws Exception {
+		List<String> list = new ArrayList<>();
+		File file = new File(fileName);
+		try (
+				FileReader fr = new FileReader(file);
+				BufferedReader br = new BufferedReader(fr)
+		) {
 			String line;
 			while ((line = br.readLine()) != null) {
 				list.add(line);

@@ -5,6 +5,7 @@ import com.xenosnowfox.engine.GameLoop;
 import com.xenosnowfox.engine.display.Monitor;
 import com.xenosnowfox.engine.display.MonitorFactory;
 import com.xenosnowfox.engine.display.Window;
+import com.xenosnowfox.engine.graphics.Material;
 import com.xenosnowfox.engine.graphics.Texture;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -40,6 +41,8 @@ public class Spike implements GameLogic {
 	private final Window window;
 
 	private Texture texture;
+
+	private Material material;
 
 	public Spike() throws Exception {
 		System.out.println("Loading properties file.");
@@ -95,11 +98,15 @@ public class Spike implements GameLogic {
 	@Override
 	public void init() throws Exception {
 
-
 		// load a texture
 		final String textureFileName = spikeProperties.getProperty("textures.directory") + "bricks.png";
 		System.out.println("Loading texture: " + textureFileName);
 		this.texture = new Texture(textureFileName);
+
+		// load a material
+		System.out.println("Creating Material");
+		float reflectance = 1f;
+		this.material = new Material(this.texture, reflectance);
 	}
 
 	@Override

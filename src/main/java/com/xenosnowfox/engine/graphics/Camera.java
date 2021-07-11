@@ -44,15 +44,15 @@ public class Camera implements Transformation3f {
 
     @Override
     public void movePosition(float offsetX, float offsetY, float offsetZ) {
-        if ( offsetY != 0 ) {
-            position.x += (float)Math.sin(Math.toRadians(rotation.z)) * -1.0f * offsetY;
-            position.y += (float)Math.cos(Math.toRadians(rotation.z)) * offsetY;
+        if ( offsetZ != 0 ) {
+            position.x += (float)Math.sin(Math.toRadians(rotation.y)) * -1.0f * offsetZ;
+            position.z += (float)Math.cos(Math.toRadians(rotation.y)) * offsetZ;
         }
         if ( offsetX != 0) {
-            position.x += (float)Math.sin(Math.toRadians(rotation.z - 90)) * -1.0f * offsetX;
-            position.y += (float)Math.cos(Math.toRadians(rotation.z - 90)) * offsetX;
+            position.x += (float)Math.sin(Math.toRadians(rotation.y - 90)) * -1.0f * offsetX;
+            position.z += (float)Math.cos(Math.toRadians(rotation.y - 90)) * offsetX;
         }
-        position.z += offsetZ;
+        position.y += offsetY;
     }
 
     @Override

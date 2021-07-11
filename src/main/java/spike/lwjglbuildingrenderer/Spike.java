@@ -9,12 +9,14 @@ import com.xenosnowfox.engine.graphics.Camera;
 import com.xenosnowfox.engine.graphics.GameItem;
 import com.xenosnowfox.engine.graphics.Material;
 import com.xenosnowfox.engine.graphics.Mesh;
+import com.xenosnowfox.engine.graphics.MouseInput;
 import com.xenosnowfox.engine.graphics.OBJLoader;
 import com.xenosnowfox.engine.graphics.PointLight;
 import com.xenosnowfox.engine.graphics.ShaderProgram;
 import com.xenosnowfox.engine.graphics.Texture;
 import com.xenosnowfox.engine.graphics.Transformation;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
@@ -22,8 +24,14 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL46;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_X;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_Z;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.glClear;
@@ -33,6 +41,16 @@ import static org.lwjgl.opengl.GL11.glViewport;
  * Main Spike Entrypoint.
  */
 public class Spike implements GameLogic {
+
+	private final static int KEY_FORWARD = GLFW.GLFW_KEY_W;
+	private final static int KEY_BACKWARD = GLFW.GLFW_KEY_S;
+	private final static int KEY_LEFT = GLFW.GLFW_KEY_A;
+	private final static int KEY_RIGHT = GLFW.GLFW_KEY_D;
+	private final static int KEY_UP = GLFW.GLFW_KEY_Q;
+	private final static int KEY_DOWN = GLFW.GLFW_KEY_E;
+
+	private static final float CAMERA_POS_STEP = 0.05f;
+	private static final float MOUSE_SENSITIVITY = 0.2f;
 
 	/**
 	 * Application entry point.
@@ -56,6 +74,8 @@ public class Spike implements GameLogic {
 	private final Window window;
 
 	private final Camera camera;
+
+	private final MouseInput mouseInput;
 
 	private Texture texture;
 
@@ -86,6 +106,8 @@ public class Spike implements GameLogic {
 
 	private PointLight pointLight;
 
+	private final Vector3f cameraInc = new Vector3f();
+
 
 	public Spike() throws Exception {
 		System.out.println("Loading properties file.");
@@ -103,12 +125,13 @@ public class Spike implements GameLogic {
 		// get a reference to the primary monitor
 		final Monitor monitor = MonitorFactory.getPrimaryMonitor();
 
+
 		// configure GLFW
 		GLFW.glfwDefaultWindowHints(); // optional, the current window hints are already the default
 		GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE); // the window will stay hidden after creation
 		GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE); // the window will be resizable
-//		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
-//		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
+//		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
+//		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 6);
 //		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
 //		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLFW.GLFW_TRUE);
 		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GLFW.GLFW_TRUE);
@@ -116,8 +139,8 @@ public class Spike implements GameLogic {
 		// create a window
 		this.window = new Window(
 				spikeProperties.getProperty("window.title", "Spike")
-				, Integer.parseInt(spikeProperties.getProperty("window.width", "640"))
-				, Integer.parseInt(spikeProperties.getProperty("window.height", "480"))
+				, monitor.getVideoMode().getWidth() // Integer.parseInt(spikeProperties.getProperty("window.width", "640"))
+				, monitor.getVideoMode().getHeight() //Integer.parseInt(spikeProperties.getProperty("window.height", "480"))
 				, true
 		);
 
@@ -129,7 +152,9 @@ public class Spike implements GameLogic {
 		this.window.requestAttention();
 
 		this.camera = new Camera();
-		this.camera.setPosition(0f, 0f, 0f);
+		this.camera.setPosition(0f, 1.85f, 3f);
+
+		this.mouseInput = new MouseInput();
 
 		// This line is critical for LWJGL's interoperation with GLFW's
 		// OpenGL context, or any context that is managed externally.
@@ -143,6 +168,10 @@ public class Spike implements GameLogic {
 
 	@Override
 	public void init() throws Exception {
+
+		// initialize mouse input
+		this.mouseInput.init(this.window);
+		this.mouseInput.centerOnWindow(this.window);
 
 		// load a texture
 		final String textureFileName = spikeProperties.getProperty("textures.directory") + "bricks.png";
@@ -199,17 +228,45 @@ public class Spike implements GameLogic {
 	@Override
 	public void input() {
 
+		this.mouseInput.input(this.window);
+
+		List<String> suffixParts = new ArrayList<>();
+		suffixParts.add("X:" + camera.getPosition().x);
+		suffixParts.add("Y:" + camera.getPosition().y);
+		suffixParts.add("Z:" + camera.getPosition().z);
+		this.window.setTitleSuffix(String.join(", ", suffixParts));
+
+		cameraInc.set(0f, 0f, 0f);
+
+		if (window.isKeyPressed(KEY_FORWARD)) {
+			cameraInc.z = -1;
+		} else if (window.isKeyPressed(KEY_BACKWARD)) {
+			cameraInc.z = 1;
+		}
+		if (window.isKeyPressed(KEY_LEFT)) {
+			cameraInc.x = -1;
+		} else if (window.isKeyPressed(KEY_RIGHT)) {
+			cameraInc.x = 1;
+		}
+		if (window.isKeyPressed(KEY_UP)) {
+			cameraInc.y = 1;
+		} else if (window.isKeyPressed(KEY_DOWN)) {
+			cameraInc.y = -1;
+		}
 	}
 
 	@Override
 	public void update(final float interval) {
-		this.cameraOffset = interval / 10f;
-		// this.camera.setPosition(0f, this.cameraOffset, 0f);
+		camera.movePosition(cameraInc.x * CAMERA_POS_STEP, cameraInc.y * CAMERA_POS_STEP, cameraInc.z * CAMERA_POS_STEP);
+
+		Vector2f rotVec = mouseInput.getDisplVec();
+		camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY, 0);
 	}
 
 	@Override
 	public void render() {
-		this.gameItems[0].movePosition(0, 0, -this.cameraOffset);
+		// this.gameItems[0].movePosition(0, 0, -this.cameraOffset);
+
 
 		// Set the clear color
 		GL46.glClearColor(43f / 255f, 43f / 255f, 43f / 255f, 0f); // BG color
@@ -268,6 +325,8 @@ public class Spike implements GameLogic {
 
 		// swap the buffers
 		this.window.swapBuffers();
+
+		this.mouseInput.centerOnWindow(this.window);
 	}
 
 	@Override

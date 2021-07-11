@@ -16,6 +16,7 @@ public class Window {
 	 * Title of the window.
 	 */
 	private final String title;
+	private String titleSuffix = "";
 
 	/**
 	 * Width, in pixels, of the window.
@@ -62,7 +63,7 @@ public class Window {
 		this.resized = false;
 
 		// Create the window
-		windowHandle = GLFW.glfwCreateWindow(this.width, this.height, this.title, NULL, NULL);
+		windowHandle = GLFW.glfwCreateWindow(this.width, this.height, String.join("", this.title, this.titleSuffix), NULL, NULL);
 		if (windowHandle == NULL) {
 			throw new RuntimeException("Failed to create the GLFW window");
 		}
@@ -246,5 +247,20 @@ public class Window {
 				(videoMode.getWidth() - this.getWidth()) / 2,
 				(videoMode.getHeight() - this.getHeight()) / 2
 		);
+	}
+
+	/**
+	 * Returns whether the given key is currently pressed.
+	 *
+	 * @param keyCode Key to check for.
+	 * @return {@code true} if the key is currently pressed, or {@code false} otherwise.
+	 */
+	public boolean isKeyPressed(int keyCode) {
+		return GLFW.glfwGetKey(windowHandle, keyCode) == GLFW.GLFW_PRESS;
+	}
+
+	public void setTitleSuffix(final String withSuffix) {
+		this.titleSuffix = Objects.requireNonNull(withSuffix);
+		GLFW.glfwSetWindowTitle(this.windowHandle, String.join(" ", this.title, this.titleSuffix));
 	}
 }

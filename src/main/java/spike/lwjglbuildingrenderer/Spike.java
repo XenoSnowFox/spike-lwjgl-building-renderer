@@ -182,7 +182,17 @@ public class Spike extends GameLoop implements GameLogic {
 		GameItem gameItem = new GameItem(mesh);
 		gameItem.setScale(1f, 1f, 1f);
 		gameItem.setPosition(1f, 0, 0);
-		gameItems = new GameItem[]{gameItem};
+
+		GameItem gameItem2 = new GameItem(mesh);
+		gameItem2.setScale(1f, 1f, 1f);
+		gameItem2.setPosition(1f, 0, 0);
+		gameItem2.setRotation(0f, 90f, 0f);
+
+		GameItem gameItem3 = new GameItem(mesh);
+		gameItem3.setScale(1f, 1f, 1f);
+		gameItem3.setPosition(0.5f, 0, 0);
+
+		gameItems = new GameItem[]{gameItem, gameItem2, gameItem3};
 
 		// load shader program
 		System.out.println("Loading shader program.");

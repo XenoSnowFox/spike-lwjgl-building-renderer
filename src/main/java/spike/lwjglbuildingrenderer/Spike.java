@@ -139,8 +139,8 @@ public class Spike implements GameLogic {
 		// create a window
 		this.window = new Window(
 				spikeProperties.getProperty("window.title", "Spike")
-				, monitor.getVideoMode().getWidth() // Integer.parseInt(spikeProperties.getProperty("window.width", "640"))
-				, monitor.getVideoMode().getHeight() //Integer.parseInt(spikeProperties.getProperty("window.height", "480"))
+				, Integer.parseInt(spikeProperties.getProperty("window.width", "640"))
+				, Integer.parseInt(spikeProperties.getProperty("window.height", "480"))
 				, true
 		);
 

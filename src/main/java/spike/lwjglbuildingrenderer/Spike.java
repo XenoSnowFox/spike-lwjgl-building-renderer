@@ -116,23 +116,15 @@ public class Spike implements GameLogic {
 		final Monitor monitor = Monitor.factory()
 				.getPrimaryMonitor();
 
-		// configure GLFW
-		GLFW.glfwDefaultWindowHints(); // optional, the current window hints are already the default
-		GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE); // the window will stay hidden after creation
-		GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE); // the window will be resizable
-//		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
-//		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 6);
-//		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
-//		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLFW.GLFW_TRUE);
-		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GLFW.GLFW_TRUE);
-
-		// create a window
-		this.window = new Window(
-				spikeProperties.getProperty("window.title", "Spike")
-				, Integer.parseInt(spikeProperties.getProperty("window.width", "640"))
-				, Integer.parseInt(spikeProperties.getProperty("window.height", "480"))
-				, true
-		);
+		// create a new window
+		this.window = Window.builder()
+				.title(spikeProperties.getProperty("window.title", "Spike"))
+				.width(Integer.parseInt(spikeProperties.getProperty("window.width", "640")))
+				.height(Integer.parseInt(spikeProperties.getProperty("window.height", "480")))
+				.visible(false)
+				.resizable(true)
+				.centerCursor(true)
+				.build();
 
 		// center the window on the monitor
 		this.window.centerOnMonitor(monitor);

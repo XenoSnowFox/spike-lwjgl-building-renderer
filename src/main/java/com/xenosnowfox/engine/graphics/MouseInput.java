@@ -1,6 +1,6 @@
 package com.xenosnowfox.engine.graphics;
 
-import com.xenosnowfox.engine.display.Window;
+import com.xenosnowfox.lwjglengine.display.Window;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 

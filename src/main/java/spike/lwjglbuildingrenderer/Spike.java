@@ -2,9 +2,6 @@ package spike.lwjglbuildingrenderer;
 
 import com.xenosnowfox.engine.GameLogic;
 import com.xenosnowfox.engine.GameLoop;
-import com.xenosnowfox.engine.display.Monitor;
-import com.xenosnowfox.engine.display.MonitorFactory;
-import com.xenosnowfox.engine.display.Window;
 import com.xenosnowfox.engine.graphics.Camera;
 import com.xenosnowfox.engine.graphics.GameItem;
 import com.xenosnowfox.engine.graphics.Material;
@@ -15,6 +12,8 @@ import com.xenosnowfox.engine.graphics.PointLight;
 import com.xenosnowfox.engine.graphics.ShaderProgram;
 import com.xenosnowfox.engine.graphics.Texture;
 import com.xenosnowfox.engine.graphics.Transformation;
+import com.xenosnowfox.lwjglengine.display.Monitor;
+import com.xenosnowfox.lwjglengine.display.Window;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -27,15 +26,6 @@ import org.lwjgl.opengl.GL46;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_X;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_Z;
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11.glViewport;
 
 /**
  * Main Spike Entrypoint.
@@ -123,8 +113,8 @@ public class Spike implements GameLogic {
 			throw new IllegalStateException("Unable to initialize GLFW");
 
 		// get a reference to the primary monitor
-		final Monitor monitor = MonitorFactory.getPrimaryMonitor();
-
+		final Monitor monitor = Monitor.factory()
+				.getPrimaryMonitor();
 
 		// configure GLFW
 		GLFW.glfwDefaultWindowHints(); // optional, the current window hints are already the default
@@ -234,7 +224,7 @@ public class Spike implements GameLogic {
 		suffixParts.add("X:" + camera.getPosition().x);
 		suffixParts.add("Y:" + camera.getPosition().y);
 		suffixParts.add("Z:" + camera.getPosition().z);
-		this.window.setTitleSuffix(String.join(", ", suffixParts));
+		this.window.setTitle(spikeProperties.getProperty("window.title", "Spike") + " [" + String.join(", ", suffixParts) + "]");
 
 		cameraInc.set(0f, 0f, 0f);
 

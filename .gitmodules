@@ -1,0 +1,3 @@
+[submodule "module/lwjgl-engine"]
+	path = module/lwjgl-engine
+	url = https://github.com/XenoSnowFox/lwjgl-engine.git

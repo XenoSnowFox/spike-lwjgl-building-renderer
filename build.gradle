@@ -15,15 +15,12 @@ project.ext.lwjglNatives = "natives-windows"
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven {
-        url = "https://s3-us-west-2.amazonaws.com/dynamodb-local/release"
-    }
 }
 
 dependencies {
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 
+    implementation project(':module:lwjgl-engine')
     implementation "org.joml:joml:1.10.1"
     implementation "org.lwjgl:lwjgl"
     implementation "org.lwjgl:lwjgl-assimp"
@@ -64,4 +61,34 @@ task copyGameResources(type: Copy) {
         include '**/*.*'
     }
     into 'build/libs/data'
+}
+
+def gitSubmoduleInit() {
+    System.out.println("  > git submodule update --init --recursive");
+    exec {
+        executable "git"
+        args "submodule", "update", "--init", "--recursive"
+    }
+}
+
+def gitSubmoduleUpdate() {
+    System.out.println("  > git submodule update --remote --merge");
+    exec {
+        executable "git"
+        args "submodule", "update", "--remote", "--merge"
+    }
+}
+
+task initializeSubmodules {
+    group 'git'
+    doLast {
+        gitSubmoduleInit();
+    }
+}
+
+task updateSubmodules {
+    group 'git'
+    doLast {
+        gitSubmoduleUpdate();
+    }
 }

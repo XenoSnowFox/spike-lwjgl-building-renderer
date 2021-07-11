@@ -1,7 +1,7 @@
 package com.xenosnowfox.engine;
 
-import com.xenosnowfox.engine.display.Window;
 import com.xenosnowfox.engine.graphics.Timer;
+import com.xenosnowfox.lwjglengine.display.Window;
 
 import java.util.Objects;
 

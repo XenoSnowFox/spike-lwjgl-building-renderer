@@ -1,6 +1,7 @@
 package com.xenosnowfox.engine.graphics;
 
 import com.xenosnowfox.engine.components.Transformation3f;
+import com.xenosnowfox.lwjglengine.projection.Camera;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -23,8 +24,8 @@ public class Transformation {
     }
     
     public Matrix4f getViewMatrix(Camera camera) {
-        Vector3f cameraPos = camera.getPosition();
-        Vector3f rotation = camera.getRotation();
+        Vector3f cameraPos = camera.position();
+        Vector3f rotation = camera.rotation();
         
         viewMatrix.identity();
         // First do the rotation so camera rotates over its position

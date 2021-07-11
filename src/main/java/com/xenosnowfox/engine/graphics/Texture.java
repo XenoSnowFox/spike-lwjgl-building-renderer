@@ -7,8 +7,6 @@ import org.lwjgl.stb.STBImage;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
-
-
 public class Texture {
 
 	public static int loadFromFile(String withFileName) throws Exception {

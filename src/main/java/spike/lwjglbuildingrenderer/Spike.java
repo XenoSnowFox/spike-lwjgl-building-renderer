@@ -52,10 +52,8 @@ public class Spike extends GameLoop implements GameLogic {
 	public static void main(String... args) {
 		try {
 			System.out.println("Starting Spike.");
-			final Spike spike = new Spike();
-			spike.run();
-//			final GameLoop gameLoop = new GameLoop(spike.window, spike);
-//			gameLoop.run();
+			new Spike()
+					.run();
 		} catch (Exception excp) {
 			excp.printStackTrace();
 			System.exit(-1);
@@ -82,7 +80,7 @@ public class Spike extends GameLoop implements GameLogic {
 
 	private ShaderProgram shaderProgram;
 
-	private float specularPower = 10f;
+	private float specularPower = 5f;
 
 	/**
 	 * Field of View in Radians
@@ -139,7 +137,7 @@ public class Spike extends GameLoop implements GameLogic {
 		this.window.requestAttention();
 
 		this.camera = new Camera();
-		this.camera.position(0f, 1.85f, 3f);
+		this.camera.position(0f, 1.65f, 1f);
 
 		this.mouseInput = new MouseInput();
 
@@ -230,7 +228,7 @@ public class Spike extends GameLoop implements GameLogic {
 		ambientLight = new Vector3f(1f, 1f, 1f);
 
 		Vector3f lightColour = new Vector3f(1, 1, 1);
-		Vector3f lightPosition = new Vector3f(0, 0, 1);
+		Vector3f lightPosition = new Vector3f(0, 0, -2);
 		float lightIntensity = 1.0f;
 		pointLight = new PointLight(lightColour, lightPosition, lightIntensity);
 		PointLight.Attenuation att = new PointLight.Attenuation(0.0f, 0.0f, 1.0f);
@@ -308,10 +306,14 @@ public class Spike extends GameLoop implements GameLogic {
 		GL46.glClearColor(250f / 255f, 43f / 255f, 43f / 255f, 1f); // BG color
 		GL46.glColor3f(169f / 255f, 183f / 255f, 198f / 255f); // Text color
 		GL46.glEnable(GL46.GL_DEPTH_TEST);
+		GL46.glEnable(GL46.GL_CULL_FACE);
 
 		// start new render pass
 		GL46.glLoadIdentity();
 		GL46.glClear(GL46.GL_COLOR_BUFFER_BIT | GL46.GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+
+		GL46.glCullFace(GL46.GL_BACK);
+		GL46.glFrontFace(GL46.GL_CW);
 
 		// adjust the viewport
 		if (window.isResized()) {
@@ -339,7 +341,7 @@ public class Spike extends GameLoop implements GameLogic {
 		// Get a copy of the light object and transform its position to view coordinates
 		PointLight currPointLight = new PointLight(pointLight);
 		Vector3f lightPos = currPointLight.getPosition();
-		Vector4f aux = new Vector4f(lightPos, 1);
+		Vector4f aux = new Vector4f(lightPos, 1f);
 		aux.mul(viewMatrix);
 		lightPos.x = aux.x;
 		lightPos.y = aux.y;
